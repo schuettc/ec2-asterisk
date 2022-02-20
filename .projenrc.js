@@ -5,6 +5,10 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   cdkVersion: '2.13.0',
   defaultReleaseBranch: 'main',
   name: 'ec2-asterisk',
+  deps: ['@aws-sdk/client-ec2', 'inquirer'],
+  eslintOptions: {
+    ignorePatterns: ['deploy.mjs'],
+  },
   autoApproveOptions: {
     secret: 'GITHUB_TOKEN',
     allowedUsernames: ['schuettc'],
@@ -15,7 +19,6 @@ const project = new awscdk.AwsCdkTypeScriptApp({
       labels: ['auto-approve', 'auto-merge'],
     },
   },
-  projenUpgradeSecret: 'PROJEN_GITHUB_TOKEN',
   repositoryUrl: 'https://github.com/schuettc/ec2-asterisk.git',
 });
 project.synth();
