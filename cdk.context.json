@@ -6,5 +6,54 @@
     "us-east-1d",
     "us-east-1e",
     "us-east-1f"
-  ]
+  ],
+  "availability-zones:account=316835620159:region=us-west-2": [
+    "us-west-2a",
+    "us-west-2b",
+    "us-west-2c",
+    "us-west-2d"
+  ],
+  "vpc-provider:account=316835620159:filter.vpc-id=vpc-0b029da730ad31fa7:region=us-west-2:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-0b029da730ad31fa7",
+    "vpcCidrBlock": "10.0.0.0/16",
+    "availabilityZones": [],
+    "subnetGroups": [
+      {
+        "name": "AsteriskPublic",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-095bade8082a66cdb",
+            "cidr": "10.0.2.0/24",
+            "availabilityZone": "us-west-2a",
+            "routeTableId": "rtb-0159f79f5dc019c32"
+          },
+          {
+            "subnetId": "subnet-0ac0138bbb4cb819e",
+            "cidr": "10.0.3.0/24",
+            "availabilityZone": "us-west-2b",
+            "routeTableId": "rtb-09674fbe57305f423"
+          }
+        ]
+      },
+      {
+        "name": "CUBEPublic",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-0bd2359c1d21bb6d7",
+            "cidr": "10.0.0.0/24",
+            "availabilityZone": "us-west-2a",
+            "routeTableId": "rtb-064c210929ef96b35"
+          },
+          {
+            "subnetId": "subnet-084370ba1f77b0f5e",
+            "cidr": "10.0.1.0/24",
+            "availabilityZone": "us-west-2b",
+            "routeTableId": "rtb-0a397f327de7f1072"
+          }
+        ]
+      }
+    ]
+  }
 }

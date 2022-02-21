@@ -5,10 +5,8 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   cdkVersion: '2.13.0',
   defaultReleaseBranch: 'main',
   name: 'ec2-asterisk',
-  deps: ['@aws-sdk/client-ec2', 'inquirer'],
-  eslintOptions: {
-    ignorePatterns: ['deploy.mjs'],
-  },
+  deps: ['@aws-sdk/client-ec2'],
+  // context: { vpcId: 'vpc-xxxxxxxx' }, //TO ADD ASTERISK TO EXISTING VPC - UNCOMMENT
   autoApproveOptions: {
     secret: 'GITHUB_TOKEN',
     allowedUsernames: ['schuettc'],
@@ -23,11 +21,11 @@ const project = new awscdk.AwsCdkTypeScriptApp({
 });
 project.synth();
 
-const common_exclude = [
+const common_include = [
   'cdk.out',
   'cdk.context.json',
   'yarn-error.log',
   'dependabot.yml',
 ];
 
-project.gitignore.exclude(...common_exclude);
+project.gitignore.include(...common_include);

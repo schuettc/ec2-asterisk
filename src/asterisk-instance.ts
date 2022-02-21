@@ -8,24 +8,30 @@ export class Asterisk extends Stack {
   constructor(scope: Construct, id: string, props?: any) {
     super(scope, id, props);
 
-    const vpc = new ec2.Vpc(this, 'VPC', {
-      vpcName: 'Asterisk VPC',
-      natGateways: 0,
-      maxAzs: 1,
-      subnetConfiguration: [
-        {
-          cidrMask: 24,
-          name: 'AsteriskSubnet',
-          subnetType: ec2.SubnetType.PUBLIC,
-        },
-      ],
-    });
+    if (this.node.tryGetContext('vpcId')) {
+      var vpc = ec2.Vpc.fromLookup(this, 'VPC', {
+        vpcId: this.node.tryGetContext('vpcId'),
+      });
+    } else {
+      vpc = new ec2.Vpc(this, 'VPC', {
+        vpcName: 'Asterisk VPC',
+        natGateways: 0,
+        maxAzs: 1,
+        subnetConfiguration: [
+          {
+            cidrMask: 24,
+            name: 'AsteriskSubnet',
+            subnetType: ec2.SubnetType.PUBLIC,
+          },
+        ],
+      });
+    }
 
     const ec2Eip = new ec2.CfnEIP(this, 'ec2Eip');
 
     const ec2Instance = new ec2.Instance(this, 'Asterisk', {
       vpc,
-      vpcSubnets: { subnetGroupName: 'AsteriskSubnet' },
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.T4G,
         ec2.InstanceSize.MICRO,
