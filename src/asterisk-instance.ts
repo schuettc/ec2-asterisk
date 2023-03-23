@@ -1,7 +1,29 @@
 import path from 'path';
 import { Stack, Duration } from 'aws-cdk-lib';
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as iam from 'aws-cdk-lib/aws-iam';
+import {
+  Vpc,
+  SubnetType,
+  CfnEIP,
+  Instance,
+  AmazonLinuxImage,
+  InstanceType,
+  InstanceClass,
+  InstanceSize,
+  AmazonLinuxGeneration,
+  AmazonLinuxCpuType,
+  CloudFormationInit,
+  InitConfig,
+  InitFile,
+  InitCommand,
+  CfnEIPAssociation,
+} from 'aws-cdk-lib/aws-ec2';
+import {
+  Role,
+  ServicePrincipal,
+  PolicyDocument,
+  PolicyStatement,
+  ManagedPolicy,
+} from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 export class Asterisk extends Stack {
@@ -9,11 +31,11 @@ export class Asterisk extends Stack {
     super(scope, id, props);
 
     if (this.node.tryGetContext('vpcId')) {
-      var vpc = ec2.Vpc.fromLookup(this, 'VPC', {
+      var vpc = Vpc.fromLookup(this, 'VPC', {
         vpcId: this.node.tryGetContext('vpcId'),
       });
     } else {
-      vpc = new ec2.Vpc(this, 'VPC', {
+      vpc = new Vpc(this, 'VPC', {
         vpcName: 'Asterisk VPC',
         natGateways: 0,
         maxAzs: 1,
@@ -21,87 +43,108 @@ export class Asterisk extends Stack {
           {
             cidrMask: 24,
             name: 'AsteriskSubnet',
-            subnetType: ec2.SubnetType.PUBLIC,
+            subnetType: SubnetType.PUBLIC,
           },
         ],
       });
     }
 
-    const ec2Eip = new ec2.CfnEIP(this, 'ec2Eip');
+    const ec2Eip = new CfnEIP(this, 'ec2Eip');
 
-    const ec2Instance = new ec2.Instance(this, 'Asterisk', {
+    const ec2Instance = new Instance(this, 'Asterisk', {
       vpc,
-      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.T4G,
-        ec2.InstanceSize.MICRO,
-      ),
-      machineImage: new ec2.AmazonLinuxImage({
-        generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-        cpuType: ec2.AmazonLinuxCpuType.ARM_64,
+      vpcSubnets: { subnetType: SubnetType.PUBLIC },
+      instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.MICRO),
+      machineImage: new AmazonLinuxImage({
+        generation: AmazonLinuxGeneration.AMAZON_LINUX_2,
+        cpuType: AmazonLinuxCpuType.ARM_64,
       }),
-      init: ec2.CloudFormationInit.fromConfigSets({
+      init: CloudFormationInit.fromConfigSets({
         configSets: {
           default: ['install', 'config'],
         },
         configs: {
-          install: new ec2.InitConfig([
-            ec2.InitFile.fromObject('/etc/config.json', {
+          install: new InitConfig([
+            InitFile.fromObject('/etc/config.json', {
               IP: ec2Eip.ref,
             }),
-            ec2.InitFile.fromFileInline(
+            InitFile.fromFileInline(
+              '/tmp/amazon-cloudwatch-agent.json',
+              path.join(
+                __dirname,
+                '../resources/asteriskConfig/amazon-cloudwatch-agent.json',
+              ),
+            ),
+            InitFile.fromFileInline(
               '/etc/install.sh',
               path.join(__dirname, '../resources/asteriskConfig/install.sh'),
             ),
-            ec2.InitCommand.shellCommand('chmod +x /etc/install.sh'),
-            ec2.InitCommand.shellCommand('cd /tmp'),
-            ec2.InitCommand.shellCommand(
+            InitCommand.shellCommand('chmod +x /etc/install.sh'),
+            InitCommand.shellCommand('cd /tmp'),
+            InitCommand.shellCommand(
               '/etc/install.sh 2>&1 | tee /var/log/asterisk_install.log',
             ),
           ]),
-          config: new ec2.InitConfig([
-            ec2.InitFile.fromFileInline(
+          config: new InitConfig([
+            InitFile.fromFileInline(
               '/etc/asterisk/pjsip.conf',
               path.join(__dirname, '../resources/asteriskConfig/pjsip.conf'),
             ),
-            ec2.InitFile.fromFileInline(
+            InitFile.fromFileInline(
               '/etc/asterisk/asterisk.conf',
               path.join(__dirname, '../resources/asteriskConfig/asterisk.conf'),
             ),
-            ec2.InitFile.fromFileInline(
+            InitFile.fromFileInline(
               '/etc/asterisk/logger.conf',
               path.join(__dirname, '../resources/asteriskConfig/logger.conf'),
             ),
-            ec2.InitFile.fromFileInline(
+            InitFile.fromFileInline(
               '/etc/asterisk/modules.conf',
               path.join(__dirname, '../resources/asteriskConfig/modules.conf'),
             ),
-            ec2.InitFile.fromFileInline(
+            InitFile.fromFileInline(
               '/etc/config_asterisk.sh',
               path.join(
                 __dirname,
                 '../resources/asteriskConfig/config_asterisk.sh',
               ),
             ),
-            ec2.InitCommand.shellCommand('chmod +x /etc/config_asterisk.sh'),
-            ec2.InitCommand.shellCommand('/etc/config_asterisk.sh'),
+            InitCommand.shellCommand('chmod +x /etc/config_asterisk.sh'),
+            InitCommand.shellCommand(
+              '/etc/config_asterisk.sh 2>&1 | tee /var/log/asterisk_config.log',
+            ),
           ]),
         },
       }),
       initOptions: {
         timeout: Duration.minutes(15),
       },
-      role: new iam.Role(this, 'ec2Role', {
-        assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+      role: new Role(this, 'ec2Role', {
+        assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
+        inlinePolicies: {
+          ['cloudwatchLogs']: new PolicyDocument({
+            statements: [
+              new PolicyStatement({
+                resources: ['*'],
+                actions: [
+                  'logs:CreateLogGroup',
+                  'logs:CreateLogStream',
+                  'logs:PutLogEvents',
+                  'logs:DescribeLogStreams',
+                ],
+              }),
+            ],
+          }),
+        },
         managedPolicies: [
-          iam.ManagedPolicy.fromAwsManagedPolicyName(
+          ManagedPolicy.fromAwsManagedPolicyName(
             'AmazonSSMManagedInstanceCore',
           ),
         ],
       }),
     });
 
-    new ec2.CfnEIPAssociation(this, 'EIP Association', {
+    new CfnEIPAssociation(this, 'EIP Association', {
       eip: ec2Eip.ref,
       instanceId: ec2Instance.instanceId,
     });

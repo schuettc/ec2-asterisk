@@ -2,7 +2,8 @@ const { awscdk } = require('projen');
 const project = new awscdk.AwsCdkTypeScriptApp({
   author: 'Court Schuett',
   authorAddress: 'https://subaud.io',
-  cdkVersion: '2.13.0',
+  cdkVersion: '2.70.0',
+  workflowNodeVersion: '16.x',
   defaultReleaseBranch: 'main',
   name: 'ec2-asterisk',
   deps: ['@aws-sdk/client-ec2'],
