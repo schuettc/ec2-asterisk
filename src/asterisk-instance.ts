@@ -66,9 +66,10 @@ export class Asterisk extends Stack {
     const userData = UserData.forLinux();
     userData.addCommands(
       'apt-get update',
+      'while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do sleep 1 ; done',
       'mkdir -p /opt/aws/bin',
-      'apt-get install python3-pip unzip jq asterisk -y',
-      'pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz',
+      'apt-get install -y python3-pip unzip jq asterisk',
+      'pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz',
       'ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup',
       'ln -s /usr/local/bin/cfn-* /opt/aws/bin/',
       'curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"',

@@ -23,7 +23,7 @@ Object {
     },
   },
   "Resources": Object {
-    "Asterisk9C1C74F3d74b700268eccdb0": Object {
+    "Asterisk9C1C74F3e187e4e851d9424f": Object {
       "CreationPolicy": Object {
         "ResourceSignal": Object {
           "Count": 1,
@@ -309,9 +309,10 @@ systemctl start asterisk",
               Array [
                 "#!/bin/bash
 apt-get update
+while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do sleep 1 ; done
 mkdir -p /opt/aws/bin
-apt-get install python3-pip unzip jq asterisk -y
-pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
+apt-get install -y python3-pip unzip jq asterisk
+pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
 ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
 ln -s /usr/local/bin/cfn-* /opt/aws/bin/
 curl \\"https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip\\" -o \\"awscliv2.zip\\"
@@ -328,7 +329,7 @@ unzip -q awscliv2.zip
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F3d74b700268eccdb0 -c default
+                " --resource Asterisk9C1C74F3e187e4e851d9424f -c default
   /opt/aws/bin/cfn-signal -e $? --region ",
                 Object {
                   "Ref": "AWS::Region",
@@ -337,7 +338,7 @@ unzip -q awscliv2.zip
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F3d74b700268eccdb0
+                " --resource Asterisk9C1C74F3e187e4e851d9424f
   cat /var/log/cfn-init.log >&2
 )",
               ],
@@ -385,7 +386,7 @@ unzip -q awscliv2.zip
           "Ref": "ec2Eip",
         },
         "InstanceId": Object {
-          "Ref": "Asterisk9C1C74F3d74b700268eccdb0",
+          "Ref": "Asterisk9C1C74F3e187e4e851d9424f",
         },
       },
       "Type": "AWS::EC2::EIPAssociation",
@@ -640,7 +641,7 @@ Object {
     },
   },
   "Resources": Object {
-    "Asterisk9C1C74F3d74b700268eccdb0": Object {
+    "Asterisk9C1C74F3e187e4e851d9424f": Object {
       "CreationPolicy": Object {
         "ResourceSignal": Object {
           "Count": 1,
@@ -911,9 +912,10 @@ systemctl start asterisk",
               Array [
                 "#!/bin/bash
 apt-get update
+while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do sleep 1 ; done
 mkdir -p /opt/aws/bin
-apt-get install python3-pip unzip jq asterisk -y
-pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
+apt-get install -y python3-pip unzip jq asterisk
+pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
 ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
 ln -s /usr/local/bin/cfn-* /opt/aws/bin/
 curl \\"https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip\\" -o \\"awscliv2.zip\\"
@@ -930,7 +932,7 @@ unzip -q awscliv2.zip
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F3d74b700268eccdb0 -c default
+                " --resource Asterisk9C1C74F3e187e4e851d9424f -c default
   /opt/aws/bin/cfn-signal -e $? --region ",
                 Object {
                   "Ref": "AWS::Region",
@@ -939,7 +941,7 @@ unzip -q awscliv2.zip
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F3d74b700268eccdb0
+                " --resource Asterisk9C1C74F3e187e4e851d9424f
   cat /var/log/cfn-init.log >&2
 )",
               ],
@@ -985,7 +987,7 @@ unzip -q awscliv2.zip
           "Ref": "ec2Eip",
         },
         "InstanceId": Object {
-          "Ref": "Asterisk9C1C74F3d74b700268eccdb0",
+          "Ref": "Asterisk9C1C74F3e187e4e851d9424f",
         },
       },
       "Type": "AWS::EC2::EIPAssociation",
