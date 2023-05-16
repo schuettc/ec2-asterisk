@@ -19,6 +19,10 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     },
   },
   repositoryUrl: 'https://github.com/schuettc/ec2-asterisk.git',
+  scripts: {
+    launch:
+      'yarn && yarn projen && yarn build && yarn cdk bootstrap && yarn cdk deploy',
+  },
 });
 project.synth();
 

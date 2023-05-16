@@ -2,19 +2,28 @@
 
 exports[`Snapshot 1`] = `
 Object {
+  "Mappings": Object {
+    "AsteriskAmiMap4BFDE5E7": Object {
+      "us-east-1": Object {
+        "ami": Object {
+          "Ref": "SsmParameterValueawsservicecanonicalubuntuserverjammystablecurrentarm64hvmebsgp2amiidC96584B6F00A464EAD1953AFF4B05118Parameter",
+        },
+      },
+    },
+  },
   "Parameters": Object {
     "BootstrapVersion": Object {
       "Default": "/cdk-bootstrap/hnb659fds/version",
       "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmarm64gp2C96584B6F00A464EAD1953AFF4B05118Parameter": Object {
-      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-arm64-gp2",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+    "SsmParameterValueawsservicecanonicalubuntuserverjammystablecurrentarm64hvmebsgp2amiidC96584B6F00A464EAD1953AFF4B05118Parameter": Object {
+      "Default": "/aws/service/canonical/ubuntu/server/jammy/stable/current/arm64/hvm/ebs-gp2/ami-id",
+      "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
   "Resources": Object {
-    "Asterisk9C1C74F33aa50d24dc37cbc0": Object {
+    "Asterisk9C1C74F3d74b700268eccdb0": Object {
       "CreationPolicy": Object {
         "ResourceSignal": Object {
           "Count": 1,
@@ -213,6 +222,16 @@ contact=sip:SIP_TRUNK_SOURCE
                 "mode": "000644",
                 "owner": "root",
               },
+              "/etc/config.json": Object {
+                "content": Object {
+                  "IP": Object {
+                    "Ref": "ec2Eip",
+                  },
+                },
+                "group": "root",
+                "mode": "000644",
+                "owner": "root",
+              },
               "/etc/config_asterisk.sh": Object {
                 "content": "#!/bin/bash -xe
 IP=$( jq -r '.IP' /etc/config.json )
@@ -225,6 +244,10 @@ usermod -aG audio,dialout asterisk
 chown -R asterisk.asterisk /etc/asterisk
 chown -R asterisk.asterisk /var/{lib,log,spool}/asterisk
 
+echo '0 * * * * /sbin/asterisk -rx \\"core reload\\"' > /etc/asterisk/crontab.txt 
+crontab /etc/asterisk/crontab.txt
+
+
 systemctl start asterisk",
                 "encoding": "plain",
                 "group": "root",
@@ -235,104 +258,8 @@ systemctl start asterisk",
           },
           "configSets": Object {
             "default": Array [
-              "install",
               "config",
             ],
-          },
-          "install": Object {
-            "commands": Object {
-              "000": Object {
-                "command": "chmod +x /etc/install.sh",
-              },
-              "001": Object {
-                "command": "cd /tmp",
-              },
-              "002": Object {
-                "command": "/etc/install.sh 2>&1 | tee /var/log/asterisk_install.log",
-              },
-            },
-            "files": Object {
-              "/etc/config.json": Object {
-                "content": Object {
-                  "IP": Object {
-                    "Ref": "ec2Eip",
-                  },
-                },
-                "group": "root",
-                "mode": "000644",
-                "owner": "root",
-              },
-              "/etc/install.sh": Object {
-                "content": "#!/bin/bash -xe
-## Copyright Amazon.com Inc. or its affiliates.
-HOMEDIR=/home/ec2-user
-cd /tmp
-yum -y install make gcc gcc-c++ make subversion libxml2-devel ncurses-devel openssl-devel vim-enhanced man glibc-devel autoconf libnewt kernel-devel kernel-headers linux-headers openssl-devel zlib-devel libsrtp libsrtp-devel uuid libuuid-devel mariadb-server jansson-devel libsqlite3x libsqlite3x-devel epel-release.noarch bash-completion bash-completion-extras unixODBC unixODBC-devel libtool-ltdl libtool-ltdl-devel mysql-connector-odbc mlocate libiodbc sqlite sqlite-devel sql-devel.i686 sqlite-doc.noarch sqlite-tcl.x86_64 patch libedit-devel jq
-yum -y install amazon-cloudwatch-agent
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/tmp/amazon-cloudwatch-agent.json
-wget https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-18-current.tar.gz
-tar xvzf asterisk-18-current.tar.gz 
-cd asterisk-18*/
-./configure --libdir=/usr/lib64 --with-jansson-bundled
-make menuselect.makeopts
-menuselect/menuselect \\\\
-        --disable BUILD_NATIVE \\\\
-        --disable chan_sip \\\\
-        --disable chan_skinny \\\\
-        --enable cdr_csv \\\\
-        --enable res_snmp \\\\
-        --enable res_http_websocket \\\\
-        menuselect.makeopts
-make 
-make install
-make basic-pbx
-touch /etc/redhat-release
-make config
-ldconfig
-",
-                "encoding": "plain",
-                "group": "root",
-                "mode": "000644",
-                "owner": "root",
-              },
-              "/tmp/amazon-cloudwatch-agent.json": Object {
-                "content": "{
-	\\"agent\\": {
-		\\"run_as_user\\": \\"root\\"
-	},
-	\\"logs\\": {
-		\\"logs_collected\\": {
-			\\"files\\": {
-				\\"collect_list\\": [
-					{
-						\\"file_path\\": \\"/var/log/asterisk_install.log\\",
-						\\"log_group_name\\": \\"/var/log/amazon-chime-sdk-lex/\\",
-						\\"log_stream_name\\": \\"{instance_id}-install\\",
-						\\"retention_in_days\\": 7
-					},
-					{
-						\\"file_path\\": \\"/var/log/asterisk/messages\\",
-						\\"log_group_name\\": \\"/var/log/amazon-chime-sdk-lex/\\",
-						\\"log_stream_name\\": \\"{instance_id}-messages\\",
-						\\"retention_in_days\\": 7
-					},
-					{
-						\\"file_path\\": \\"/var/log/asterisk_config.log\\",
-						\\"log_group_name\\": \\"/var/log/amazon-chime-sdk-lex/\\",
-						\\"log_stream_name\\": \\"{instance_id}-config\\",
-						\\"retention_in_days\\": 7
-					}
-				]
-			}
-		}
-	}
-}",
-                "encoding": "plain",
-                "group": "root",
-                "mode": "000644",
-                "owner": "root",
-              },
-            },
           },
         },
       },
@@ -349,9 +276,15 @@ ldconfig
           "Ref": "AsteriskInstanceProfileB0C58003",
         },
         "ImageId": Object {
-          "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmarm64gp2C96584B6F00A464EAD1953AFF4B05118Parameter",
+          "Fn::FindInMap": Array [
+            "AsteriskAmiMap4BFDE5E7",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            "ami",
+          ],
         },
-        "InstanceType": "t4g.micro",
+        "InstanceType": "c6g.medium",
         "SecurityGroupIds": Array [
           Object {
             "Fn::GetAtt": Array [
@@ -375,7 +308,16 @@ ldconfig
               "",
               Array [
                 "#!/bin/bash
-# fingerprint: 6ddce5a6aa70381e
+apt-get update
+mkdir -p /opt/aws/bin
+apt-get install python3-pip unzip jq asterisk -y
+pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
+ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+ln -s /usr/local/bin/cfn-* /opt/aws/bin/
+curl \\"https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip\\" -o \\"awscliv2.zip\\"
+unzip -q awscliv2.zip
+./aws/install
+# fingerprint: 108aba8fc8b4216c
 (
   set +e
   /opt/aws/bin/cfn-init -v --region ",
@@ -386,7 +328,7 @@ ldconfig
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F33aa50d24dc37cbc0 -c default
+                " --resource Asterisk9C1C74F3d74b700268eccdb0 -c default
   /opt/aws/bin/cfn-signal -e $? --region ",
                 Object {
                   "Ref": "AWS::Region",
@@ -395,7 +337,7 @@ ldconfig
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F33aa50d24dc37cbc0
+                " --resource Asterisk9C1C74F3d74b700268eccdb0
   cat /var/log/cfn-init.log >&2
 )",
               ],
@@ -443,7 +385,7 @@ ldconfig
           "Ref": "ec2Eip",
         },
         "InstanceId": Object {
-          "Ref": "Asterisk9C1C74F33aa50d24dc37cbc0",
+          "Ref": "Asterisk9C1C74F3d74b700268eccdb0",
         },
       },
       "Type": "AWS::EC2::EIPAssociation",
@@ -607,6 +549,22 @@ ldconfig
             },
             "PolicyName": "cloudwatchLogs",
           },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "cloudformation:SignalResource",
+                    "cloudformation:DescribeStackResource",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "cloudformationPolicy",
+          },
         ],
       },
       "Type": "AWS::IAM::Role",
@@ -676,13 +634,13 @@ Object {
       "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmarm64gp2C96584B6F00A464EAD1953AFF4B05118Parameter": Object {
-      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-arm64-gp2",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+    "SsmParameterValueawsservicecanonicalubuntuserverjammystablecurrentarm64hvmebsgp2amiidC96584B6F00A464EAD1953AFF4B05118Parameter": Object {
+      "Default": "/aws/service/canonical/ubuntu/server/jammy/stable/current/arm64/hvm/ebs-gp2/ami-id",
+      "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
   "Resources": Object {
-    "Asterisk9C1C74F33aa50d24dc37cbc0": Object {
+    "Asterisk9C1C74F3d74b700268eccdb0": Object {
       "CreationPolicy": Object {
         "ResourceSignal": Object {
           "Count": 1,
@@ -881,6 +839,16 @@ contact=sip:SIP_TRUNK_SOURCE
                 "mode": "000644",
                 "owner": "root",
               },
+              "/etc/config.json": Object {
+                "content": Object {
+                  "IP": Object {
+                    "Ref": "ec2Eip",
+                  },
+                },
+                "group": "root",
+                "mode": "000644",
+                "owner": "root",
+              },
               "/etc/config_asterisk.sh": Object {
                 "content": "#!/bin/bash -xe
 IP=$( jq -r '.IP' /etc/config.json )
@@ -893,6 +861,10 @@ usermod -aG audio,dialout asterisk
 chown -R asterisk.asterisk /etc/asterisk
 chown -R asterisk.asterisk /var/{lib,log,spool}/asterisk
 
+echo '0 * * * * /sbin/asterisk -rx \\"core reload\\"' > /etc/asterisk/crontab.txt 
+crontab /etc/asterisk/crontab.txt
+
+
 systemctl start asterisk",
                 "encoding": "plain",
                 "group": "root",
@@ -903,104 +875,8 @@ systemctl start asterisk",
           },
           "configSets": Object {
             "default": Array [
-              "install",
               "config",
             ],
-          },
-          "install": Object {
-            "commands": Object {
-              "000": Object {
-                "command": "chmod +x /etc/install.sh",
-              },
-              "001": Object {
-                "command": "cd /tmp",
-              },
-              "002": Object {
-                "command": "/etc/install.sh 2>&1 | tee /var/log/asterisk_install.log",
-              },
-            },
-            "files": Object {
-              "/etc/config.json": Object {
-                "content": Object {
-                  "IP": Object {
-                    "Ref": "ec2Eip",
-                  },
-                },
-                "group": "root",
-                "mode": "000644",
-                "owner": "root",
-              },
-              "/etc/install.sh": Object {
-                "content": "#!/bin/bash -xe
-## Copyright Amazon.com Inc. or its affiliates.
-HOMEDIR=/home/ec2-user
-cd /tmp
-yum -y install make gcc gcc-c++ make subversion libxml2-devel ncurses-devel openssl-devel vim-enhanced man glibc-devel autoconf libnewt kernel-devel kernel-headers linux-headers openssl-devel zlib-devel libsrtp libsrtp-devel uuid libuuid-devel mariadb-server jansson-devel libsqlite3x libsqlite3x-devel epel-release.noarch bash-completion bash-completion-extras unixODBC unixODBC-devel libtool-ltdl libtool-ltdl-devel mysql-connector-odbc mlocate libiodbc sqlite sqlite-devel sql-devel.i686 sqlite-doc.noarch sqlite-tcl.x86_64 patch libedit-devel jq
-yum -y install amazon-cloudwatch-agent
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/tmp/amazon-cloudwatch-agent.json
-wget https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-18-current.tar.gz
-tar xvzf asterisk-18-current.tar.gz 
-cd asterisk-18*/
-./configure --libdir=/usr/lib64 --with-jansson-bundled
-make menuselect.makeopts
-menuselect/menuselect \\\\
-        --disable BUILD_NATIVE \\\\
-        --disable chan_sip \\\\
-        --disable chan_skinny \\\\
-        --enable cdr_csv \\\\
-        --enable res_snmp \\\\
-        --enable res_http_websocket \\\\
-        menuselect.makeopts
-make 
-make install
-make basic-pbx
-touch /etc/redhat-release
-make config
-ldconfig
-",
-                "encoding": "plain",
-                "group": "root",
-                "mode": "000644",
-                "owner": "root",
-              },
-              "/tmp/amazon-cloudwatch-agent.json": Object {
-                "content": "{
-	\\"agent\\": {
-		\\"run_as_user\\": \\"root\\"
-	},
-	\\"logs\\": {
-		\\"logs_collected\\": {
-			\\"files\\": {
-				\\"collect_list\\": [
-					{
-						\\"file_path\\": \\"/var/log/asterisk_install.log\\",
-						\\"log_group_name\\": \\"/var/log/amazon-chime-sdk-lex/\\",
-						\\"log_stream_name\\": \\"{instance_id}-install\\",
-						\\"retention_in_days\\": 7
-					},
-					{
-						\\"file_path\\": \\"/var/log/asterisk/messages\\",
-						\\"log_group_name\\": \\"/var/log/amazon-chime-sdk-lex/\\",
-						\\"log_stream_name\\": \\"{instance_id}-messages\\",
-						\\"retention_in_days\\": 7
-					},
-					{
-						\\"file_path\\": \\"/var/log/asterisk_config.log\\",
-						\\"log_group_name\\": \\"/var/log/amazon-chime-sdk-lex/\\",
-						\\"log_stream_name\\": \\"{instance_id}-config\\",
-						\\"retention_in_days\\": 7
-					}
-				]
-			}
-		}
-	}
-}",
-                "encoding": "plain",
-                "group": "root",
-                "mode": "000644",
-                "owner": "root",
-              },
-            },
           },
         },
       },
@@ -1010,9 +886,9 @@ ldconfig
           "Ref": "AsteriskInstanceProfileB0C58003",
         },
         "ImageId": Object {
-          "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmarm64gp2C96584B6F00A464EAD1953AFF4B05118Parameter",
+          "Ref": "SsmParameterValueawsservicecanonicalubuntuserverjammystablecurrentarm64hvmebsgp2amiidC96584B6F00A464EAD1953AFF4B05118Parameter",
         },
-        "InstanceType": "t4g.micro",
+        "InstanceType": "c6g.medium",
         "SecurityGroupIds": Array [
           Object {
             "Fn::GetAtt": Array [
@@ -1034,7 +910,16 @@ ldconfig
               "",
               Array [
                 "#!/bin/bash
-# fingerprint: 6ddce5a6aa70381e
+apt-get update
+mkdir -p /opt/aws/bin
+apt-get install python3-pip unzip jq asterisk -y
+pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
+ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+ln -s /usr/local/bin/cfn-* /opt/aws/bin/
+curl \\"https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip\\" -o \\"awscliv2.zip\\"
+unzip -q awscliv2.zip
+./aws/install
+# fingerprint: 108aba8fc8b4216c
 (
   set +e
   /opt/aws/bin/cfn-init -v --region ",
@@ -1045,7 +930,7 @@ ldconfig
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F33aa50d24dc37cbc0 -c default
+                " --resource Asterisk9C1C74F3d74b700268eccdb0 -c default
   /opt/aws/bin/cfn-signal -e $? --region ",
                 Object {
                   "Ref": "AWS::Region",
@@ -1054,7 +939,7 @@ ldconfig
                 Object {
                   "Ref": "AWS::StackName",
                 },
-                " --resource Asterisk9C1C74F33aa50d24dc37cbc0
+                " --resource Asterisk9C1C74F3d74b700268eccdb0
   cat /var/log/cfn-init.log >&2
 )",
               ],
@@ -1100,7 +985,7 @@ ldconfig
           "Ref": "ec2Eip",
         },
         "InstanceId": Object {
-          "Ref": "Asterisk9C1C74F33aa50d24dc37cbc0",
+          "Ref": "Asterisk9C1C74F3d74b700268eccdb0",
         },
       },
       "Type": "AWS::EC2::EIPAssociation",
@@ -1154,6 +1039,22 @@ ldconfig
               "Version": "2012-10-17",
             },
             "PolicyName": "cloudwatchLogs",
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "cloudformation:SignalResource",
+                    "cloudformation:DescribeStackResource",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "cloudformationPolicy",
           },
         ],
       },
