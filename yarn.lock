@@ -76,10 +76,10 @@
     "@aws-sdk/util-utf8-browser" "^3.0.0"
     tslib "^1.11.1"
 
-"@aws-sdk/client-ec2@^3.556.0":
-  version "3.556.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/client-ec2/-/client-ec2-3.556.0.tgz#a1a485b7f422e4b36a79966b5a50f4b44bb066cf"
-  integrity sha512-B6ErdE5sdiHCPRZS4mmNs3nRtVYCCkDQUvn0WUA3JmmN7636um4ATOJcpVaAT+bBJjMjbTDi/ijCKBkbt/ycTg==
+"@aws-sdk/client-ec2@^3.557.0":
+  version "3.557.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/client-ec2/-/client-ec2-3.557.0.tgz#ec36ba12418a439ae9b720dd70b90ba4d122bdba"
+  integrity sha512-A7wf51WbvPvavhNgZCbzVcm3/11b909U7q/dTZUBizetgccFY1EFLRnderVeS9aj4BzDnqsN9vJk3VIEplklqw==
   dependencies:
     "@aws-crypto/sha256-browser" "3.0.0"
     "@aws-crypto/sha256-js" "3.0.0"
@@ -2573,9 +2573,9 @@ domexception@^2.0.1:
     webidl-conversions "^5.0.0"
 
 electron-to-chromium@^1.4.668:
-  version "1.4.738"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.738.tgz#9a7fca98abaee61e20c9c25013d5ce60bb533436"
-  integrity sha512-lwKft2CLFztD+vEIpesrOtCrko/TFnEJlHFdRhazU7Y/jx5qc4cqsocfVrBg4So4gGe9lvxnbLIoev47WMpg+A==
+  version "1.4.739"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.739.tgz#ca9f773c9f14085fd2e46f34bc937652c9a4978a"
+  integrity sha512-koRkawXOuN9w/ymhTNxGfB8ta4MRKVW0nzifU17G1UwTWlBg0vv7xnz4nxDnRFSBe9nXMGRgICcAzqXc0PmLeA==
 
 emittery@^0.8.1:
   version "0.8.1"
